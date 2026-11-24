@@ -4,8 +4,8 @@ set -e
 BT=/e/android-sdk/build-tools/31.0.0          # aapt2 / zipalign / apksigner
 BT34=/e/android-sdk/build-tools/34.0.0        # 新版 d8（31 的 d8 不认 JDK 25 编出的类）
 PLAT=/e/android-sdk/platforms/android-31/android.jar
-W=/e/deepseek/yymc_apk
-MIR=/e/deepseek/mirror
+W="$(cd "$(dirname "$0")" && pwd)"   # 脚本所在目录＝仓库根
+MIR="$W/site"          # 仓库自带的资源目录
 cd "$W"
 
 echo "== 1/6 收集站点资源（只要 v6 + m4a）"
@@ -16,10 +16,10 @@ cp "$MIR/favicon.svg" assets/site/ 2>/dev/null || true
 cp "$MIR/game/OpusMC.v6.html" assets/site/game/
 cp "$MIR/game/js/chunk_worker.js" assets/site/game/js/
 cp "$MIR/game/favicon.ico" assets/site/game/ 2>/dev/null || true
-python - <<'PY'
+YYMC_W="$W" python - <<'PY'
 import os, shutil
-src = r"E:\deepseek\mirror\game\sounds\sfx"
-dst = r"E:\deepseek\yymc_apk\assets\site\game\sounds\sfx"
+src = os.path.join(os.environ["YYMC_W"], "site", "game", "sounds", "sfx")
+dst = os.path.join(os.environ["YYMC_W"], "assets", "site", "game", "sounds", "sfx")
 n = sz = 0
 for root, dirs, files in os.walk(src):
     for f in files:
@@ -53,10 +53,15 @@ java -cp "$BT34/lib/d8.jar" com.android.tools.r8.D8 --min-api 24 --lib "$PLAT" \
 ls -l build/dex/classes.dex | awk '{printf "   classes.dex %.1f KB\n", $5/1024}'
 
 echo "== 5/6 写入 dex + 对齐"
-python - <<'PY'
-import zipfile
-with zipfile.ZipFile(r"E:\deepseek\yymc_apk\build\app-unsigned.apk", "a", zipfile.ZIP_STORED) as z:
-    z.write(r"E:\deepseek\yymc_apk\build\dex\classes.dex", "classes.dex")
+YYMC_W="$W" python - <<'PY'
+import os, zipfile
+w = os.environ["YYMC_W"]
+apk = os.path.join(w, "build", "app-unsigned.apk")
+dex = os.path.join(w, "build", "dex", "classes.dex")
+with zipfile.ZipFile(apk, "a", zipfile.ZIP_STORED) as z:
+    if "classes.dex" in z.namelist():
+        raise SystemExit("classes.dex already present")
+    z.write(dex, "classes.dex")
 print("   classes.dex 已写入 APK 根")
 PY
 "$BT/zipalign.exe" -f 4 build/app-unsigned.apk build/app-aligned.apk

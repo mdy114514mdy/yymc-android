@@ -56,9 +56,11 @@ curl -s http://127.0.0.1:8734/rooms/api/live   # mock 会校验 Origin，错了�
 
 `HttpURLConnection`（JDK 与 Android 都是）把 **Origin 当成 restricted header 静默丢弃**，用它做反代请求会稳定 403。所以 `RoomsProxy` 自己拼 HTTP/1.1 走裸 socket，顺带处理 `Content-Length` / `Transfer-Encoding: chunked`。
 
-## 需要自备
+## 资源随仓库一起来
 
-仓库不含游戏本体与音效。构建前准备 `assets/site/` 下的 `index.html`、`game/OpusMC.v6.html`、`game/js/chunk_worker.js`、`game/sounds/sfx/**/*.m4a`（`build.sh` 里有自动收集步骤，路径指向本地 mirror 目录）。
+`site/` 就是构建要用的全部资源，克隆后 `bash build.sh` 即可出包（约 148 MB：游戏本体 48.5 MB + 区块 worker 11 MB + 4849 个 `.m4a` 共 89 MB）。`build.sh` 会把它们收进 `assets/site/` 再打进 APK。
+
+`build.sh` 顶部三个路径按自己的 SDK 位置改一下（`BT` / `BT34` / `PLAT`），脚本本身会自己定位仓库根。
 
 ## 说明
 

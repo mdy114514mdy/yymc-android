@@ -6,8 +6,9 @@ APK 里跑一个只绑 `127.0.0.1` 的中继，WebView 直接加载它，于是�
 
 | 版本 | 文件 | 大小 | 直链 |
 |---|---|---|---|
-| v1.0.0 | `YYMC.apk` | 106.7 MB | https://github.com/mdy114514mdy/yymc-android/releases/download/v1.0.0/YYMC.apk |
-| v1.0.0 | 整页 | — | https://github.com/mdy114514mdy/yymc-android/releases/tag/v1.0.0 |
+| **v1.0.1** | `YYMC.apk` | 106.7 MB | https://github.com/mdy114514mdy/yymc-android/releases/download/v1.0.1/YYMC.apk |
+| v1.0.1 | 整页（含更新记录） | — | https://github.com/mdy114514mdy/yymc-android/releases/tag/v1.0.1 |
+| v1.0.0 | `YYMC.apk`（旧版） | 106.7 MB | https://github.com/mdy114514mdy/yymc-android/releases/download/v1.0.0/YYMC.apk |
 
 资源随仓库发布（`site/`，148 MB），克隆下来即可从零编译出 APK。
 
@@ -91,7 +92,14 @@ java -cp rt cn.mdy.yymc.relay.DevMain "$(pwd)/site" 8734 127.0.0.1 9443 plain &
 curl -s http://127.0.0.1:8734/rooms/api/live              # {"mock":true,...,"origin":"https://www.bilibili.com"}
 ```
 
-## 六、已知坑
+## 六、更新记录
+
+| 版本 | 变化 |
+|---|---|
+| **v1.0.1** | **修区块"永久毒化"**（与桌面版同一修复）：被看门狗记进毒名单的区块原本永久跳过 → 永远不建网格、能看穿地面看到洞穴。现改为识别页面停顿 + 退避重试（2/4/8/16/32 s，最多 4 次）+ 建成即清除 + 退避用尽补空块 |
+| v1.0.0 | 首个版本：设备内中继（静态 + `/rooms/api` 反代 + `/rooms/p2p` WS 隧道） |
+
+## 七、已知坑
 
 1. `d8.bat` 拼了 `-Djava.ext.dirs`，JDK 9+ 直接拒启 → 改 `java -cp $BT34/lib/d8.jar`。
 2. `javac` 生成的 `$` 类（匿名/具名内部类）会让 d8 抛 NPE → 本仓库所有类都是**顶层类**。
